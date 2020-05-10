@@ -26,15 +26,20 @@ export const typeDefs = gql`
     }
 
     type Raffle {
-        id: ID!
-        price: Int!
-        users: [ ID! ]!
+        _id: ID
+        price: Float
+        usersCount: Int
+        users: [ String ]
+    }
+
+    type Number {
+        number: String!
+        value: Int!
     }
 
     type Ticket {
         id: ID!
-        numbers: [ Int! ]!
-        userNumbers: [ Int! ]!
+        selected: [ Number! ]!
     }
 
     type Subscription {
@@ -51,6 +56,6 @@ export const typeDefs = gql`
         authFacebook(token: String!): User
         authGoogle(token: String!): User
         createUser(user: inputUser): User!
-        incrementRaffle(price: Float!): Raffle!
+        incrementRaffle(price: Float!): Raffle
     }
 `;

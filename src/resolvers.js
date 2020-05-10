@@ -1,33 +1,81 @@
+import mongoose, { model, isValidObjectId } from 'mongoose';
+
 import User from "./database/models/User.js";
 import Raffle from "./database/models/Raffle.js";
-import { PubSub } from 'apollo-server';
-import jwt from 'jsonwebtoken';
+import Ticket from "./database/models/Ticket.js";
+import Global from "./database/models/Global.js";
+import { PubSub, withFilter } from 'apollo-server';
 import passport from './passport';
+import { generateNumber, getUserWithToken, getRamdomBetween } from './database/utils';
+import { numbersCost } from './database/constants';
 require('dotenv').config();
 
 const { authenticateFacebook, authenticateGoogle } = passport;
 
 const pubsub = new PubSub();
+const RAFFLE_INCREMENT = 'RAFFLE_INCREMENT';
 
 export const resolvers = {
     Subscription: {
         raffleIncrement: {
             subscribe: () => pubsub.asyncIterator([RAFFLE_INCREMENT]),
-        },
+          }
     },
     Query: {
-        getUserWithToken: async (parent, {token}, context, info) => {
-            const tokenDecoded = jwt.verify(token, process.env.JWT_KEY || 'Prout123');
-
-            console.log(tokenDecoded)
-            console.log(await User.findById(tokenDecoded.token))
-            return await User.findById(tokenDecoded.token);
-        },
+        getUserWithToken: async (parent, {token}, context, info) => await getUserWithToken(token),
         getTicket: async (parent, {token}, context, info) => {
-            return {
-                id: '2',
-                numbers: [2,2,2],
-                userNumers: [0,9]
+            console.log('context-user',context.user);
+            try {
+                if (!context.user) {
+                    return Error('No user');
+                }
+                
+                // Get current stored numbers
+                let [global] = await Global.find({});
+                const { tickets: { current, finished }, _id } = global;
+                // Just numbers and transform string to number
+                const storedNumber = Object.values(current).map(cur => cur);
+                // Calcul number of all numbers
+                const total = storedNumber.reduce((acc, cur) => acc + cur, 0);
+                let selected = [];
+                let count = 0;
+
+                for (let i = 0; i < 6; i++) {
+                    const indexOfNumber = generateNumber(total, storedNumber);
+                    const ticket = {
+                        'finished': global.tickets.finished + 1,
+                        'current': {
+                            ...global.tickets.current,
+                            [indexOfNumber]: global.tickets.current[indexOfNumber] - 1
+                        }
+                    };
+
+                    global.tickets = ticket;
+                    // global.tickets.current[indexOfNumber] = global.tickets.current[indexOfNumber] - 1;
+                    count = count + numbersCost[indexOfNumber];
+                    selected.push( indexOfNumber );
+                }
+                // Update user coins 
+                context.user.coins = context.user.coins + count;
+                // Save all
+                await global.save();
+                await context.user.save();
+
+            
+                selected = selected.map((nb, index) => {
+                    const ramdom = getRamdomBetween(0, 40);
+                    return {
+                        number: ramdom.toFixed(),
+                        value: numbersCost[nb]
+                    }
+                });
+
+                console.log(selected)
+                return {
+                    selected
+                }
+            } catch (err) {
+                throw Error(err);
             }
         },
     },
@@ -88,33 +136,48 @@ export const resolvers = {
             return kitty;
         },
         incrementRaffle: async (parent, args, context, info) => {
-            const {price} = args;
-            console.log(parent, args, context, info)
+            const { price } = args;
+            const { _id: userId } = context.user;
+
+            if (!context.user) {
+                return Error('No user');
+            }
+
             try {
-                Raffle.findOne({ price }, (err, raffle) => {
-                    if(err) throw Error(err)
+                const raffleRegister = await Raffle.findOne({ price });
+                
+                if(!raffleRegister) {
+                    const raffle = await Raffle.create(
+                        { 
+                            price,
+                            usersCount: 1,
+                            users: [userId],
+                            createAt: new Date()
+                        }
+                    );
+                    pubsub.publish(RAFFLE_INCREMENT, { raffleIncrement: raffle });
+                    
+                    return raffle;
+                }
 
-                    if(!raffle) {
-                        Raffle.create(
-                            { 
-                                price,
-                                users: [],
-                                createAt: new Date()
-                            }, 
-                            (error, raffle) => {
-                                if(error) throw Error(error)
-
-
-                            }
-                        );
+                await Raffle.updateOne(
+                    { price }, 
+                    { 
+                        $push: { users: userId },
+                        $inc: { usersCount: 1 }
                     }
-                });
+                );
 
-                pubsub.publish(RAFFLE_INCREMENT, { price });
+                await raffleRegister.save();
+
+                pubsub.publish(RAFFLE_INCREMENT, { raffleIncrement: raffleRegister });
+
+                return raffleRegister;
 
             } catch(err) {
                 throw Error(err);
             }
-        }
+        },
+        
     }
 };

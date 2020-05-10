@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 const raffleSchema = new Schema({
     createAt: Date,
     price: Number,
+    usersCount: Number,
     users: Array
 });
 
