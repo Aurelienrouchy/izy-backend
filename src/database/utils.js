@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from "./models/User.js";
+import User from "./models/User";
 
 export const getRamdomBetween = (min, max) => Math.random() * (max - min) + min;
 

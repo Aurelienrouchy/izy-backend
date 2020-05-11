@@ -1,11 +1,11 @@
 import mongoose, { model, isValidObjectId } from 'mongoose';
 
-import User from "./database/models/User.js";
-import Raffle from "./database/models/Raffle.js";
-import Ticket from "./database/models/Ticket.js";
-import Global from "./database/models/Global.js";
+import User from "./database/models/User";
+import Raffle from "./database/models/Raffle";
+import Ticket from "./database/models/Ticket";
+import Global from "./database/models/Global";
 import { PubSub, withFilter } from 'apollo-server';
-import passport from './passport';
+import passport from './passport.js';
 import { generateNumber, getUserWithToken, getRamdomBetween } from './database/utils';
 import { numbersCost } from './database/constants';
 require('dotenv').config();

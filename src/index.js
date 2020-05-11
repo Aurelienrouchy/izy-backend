@@ -6,8 +6,8 @@ import bodyParser from "body-parser";
 import passport from "passport";
 import { resolvers } from "./resolvers.js";
 import { typeDefs } from "./typeDefs.js";
-import './database'
-import { getUserWithToken } from './database/utils';
+import './database/index.js'
+import { getUserWithToken } from './database/utils.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;

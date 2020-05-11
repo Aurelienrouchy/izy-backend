@@ -4,18 +4,15 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "clean": "rm -rf build && mkdir build",
-    "build-babel": "babel -d ./build ./src -s",
-    "build": "npm run clean && npm run build-babel",
-    "start": "npm run build && node --experimental-modules ./build/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "clean": "rm bundle.js",
+    "start": "npm run clean && npm run build && node bundle.js",
+    "build": "NODE_ENV=production rollup -c",
+    "dev": "rollup -c -w"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@babel/plugin-transform-runtime": "^7.9.6",
-    "@babel/runtime": "^7.9.6",
     "apollo-server": "^2.12.0",
     "apollo-server-express": "^2.12.0",
     "body-parser": "^1.19.0",
@@ -31,8 +28,14 @@
     "passport-google-token": "^0.1.2",
     "subscriptions-transport-ws": "^0.9.16",
     "@babel/cli": "^7.8.4",
-    "@babel/core": "^7.9.0",
     "@babel/node": "^7.8.7",
     "@babel/preset-env": "^7.9.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@babel/plugin-transform-runtime": "^7.9.6",
+    "@rollup/plugin-run": "^2.0.2",
+    "rollup": "^2.9.1",
+    "rollup-plugin-babel": "^4.4.0"
   }
 }
