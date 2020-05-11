@@ -303,14 +303,14 @@ var resolvers = {
 
       return getTicket;
     }(),
-    getRaffle: function () {
-      var _getRaffle = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(parent, _ref3, context, info) {
-        var price, raffle;
+    getRaffles: function () {
+      var _getRaffles = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(parent, args, context, info) {
+        var raffles;
         return _regeneratorRuntime.wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
-                price = _ref3.price;
+                console.log('ppp');
 
                 if (context.user) {
                   _context3.next = 3;
@@ -322,49 +322,43 @@ var resolvers = {
               case 3:
                 _context3.prev = 3;
                 _context3.next = 6;
-                return Raffle.findOne({
-                  price: price
-                });
+                return Raffle.find();
 
               case 6:
-                raffle = _context3.sent;
-                console.log(raffle);
-                return _context3.abrupt("return", {
-                  price: raffle.price,
-                  usersCount: raffle.usersCount
-                });
+                raffles = _context3.sent;
+                return _context3.abrupt("return", raffles);
 
-              case 11:
-                _context3.prev = 11;
+              case 10:
+                _context3.prev = 10;
                 _context3.t0 = _context3["catch"](3);
                 throw Error(_context3.t0);
 
-              case 14:
+              case 13:
               case "end":
                 return _context3.stop();
             }
           }
-        }, _callee3, null, [[3, 11]]);
+        }, _callee3, null, [[3, 10]]);
       }));
 
-      function getRaffle(_x9, _x10, _x11, _x12) {
-        return _getRaffle.apply(this, arguments);
+      function getRaffles(_x9, _x10, _x11, _x12) {
+        return _getRaffles.apply(this, arguments);
       }
 
-      return getRaffle;
+      return getRaffles;
     }()
   },
   Mutation: {
     authFacebook: function () {
-      var _authFacebook = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref4, _ref5) {
+      var _authFacebook = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref3, _ref4) {
         var token, req, res, _yield$authenticateFa, _yield$authenticateFa2, profile, refreshToken, data, info, user, newUser;
 
         return _regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                token = _ref4.token;
-                req = _ref5.req, res = _ref5.res;
+                token = _ref3.token;
+                req = _ref4.req, res = _ref4.res;
                 req.body = _objectSpread({}, req.body, {
                   access_token: token
                 });
@@ -578,7 +572,7 @@ var resolvers = {
 };
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffle(price: Float!): Raffle!\n    }\n\n    type Mutation {\n        authFacebook(token: String!): User\n        authGoogle(token: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!): Raffle\n    }\n"]);
+  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        authFacebook(token: String!): User\n        authGoogle(token: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!): Raffle\n    }\n"]);
 
   _templateObject = function _templateObject() {
     return data;

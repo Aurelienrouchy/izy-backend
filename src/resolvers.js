@@ -73,19 +73,15 @@ export const resolvers = {
                 throw Error(err);
             }
         },
-        getRaffle: async (parent, {price}, context, info) => {
+        getRaffles: async (parent, args, context, info) => {
+            console.log('ppp')
             if (!context.user) {
                 return Error('No user');
             }
 
             try {
-                const raffle = await Raffle.findOne({ price });
-                
-                return {
-                    price: raffle.price,
-                    usersCount: raffle.usersCount
-                };
-
+                const raffles = await Raffle.find();
+                return raffles;
             } catch(err) {
                 throw Error(err);
             }

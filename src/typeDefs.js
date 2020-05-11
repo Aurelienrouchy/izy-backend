@@ -46,7 +46,7 @@ export const typeDefs = gql`
         getUser(id: ID!): User
         getUserWithToken(token: String!): User
         getTicket: Ticket!
-        getRaffle(price: Float!): Raffle!
+        getRaffles: [ Raffle! ]!
     }
 
     type Mutation {
