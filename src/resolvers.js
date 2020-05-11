@@ -80,8 +80,7 @@ export const resolvers = {
             }
 
             try {
-                const raffles = await Raffle.find();
-                return raffles;
+                return await Raffle.find();
             } catch(err) {
                 throw Error(err);
             }
