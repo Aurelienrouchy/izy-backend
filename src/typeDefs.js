@@ -42,14 +42,11 @@ export const typeDefs = gql`
         selected: [ Number! ]!
     }
 
-    type Subscription {
-        raffleIncrement: Raffle
-    }
-
     type Query {
         getUser(id: ID!): User
         getUserWithToken(token: String!): User
         getTicket: Ticket!
+        getRaffle(price: Float!): Raffle!
     }
 
     type Mutation {

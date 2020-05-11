@@ -16,11 +16,6 @@ const pubsub = new PubSub();
 const RAFFLE_INCREMENT = 'RAFFLE_INCREMENT';
 
 export const resolvers = {
-    Subscription: {
-        raffleIncrement: {
-            subscribe: () => pubsub.asyncIterator([RAFFLE_INCREMENT]),
-          }
-    },
     Query: {
         getUserWithToken: async (parent, {token}, context, info) => await getUserWithToken(token),
         getTicket: async (parent, {token}, context, info) => {
@@ -75,6 +70,23 @@ export const resolvers = {
                     selected
                 }
             } catch (err) {
+                throw Error(err);
+            }
+        },
+        getRaffle: async (parent, {price}, context, info) => {
+            if (!context.user) {
+                return Error('No user');
+            }
+
+            try {
+                const raffle = await Raffle.findOne({ price });
+                console.log(raffle)
+                return {
+                    price: raffle.price,
+                    usersCount: raffle.usersCount
+                };
+
+            } catch(err) {
                 throw Error(err);
             }
         },
@@ -155,8 +167,7 @@ export const resolvers = {
                             createAt: new Date()
                         }
                     );
-                    pubsub.publish(RAFFLE_INCREMENT, { raffleIncrement: raffle });
-                    
+
                     return raffle;
                 }
 
@@ -169,8 +180,6 @@ export const resolvers = {
                 );
 
                 await raffleRegister.save();
-
-                pubsub.publish(RAFFLE_INCREMENT, { raffleIncrement: raffleRegister });
 
                 return raffleRegister;
 
