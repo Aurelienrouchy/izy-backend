@@ -80,7 +80,7 @@ export const resolvers = {
 
             try {
                 const raffle = await Raffle.findOne({ price });
-                console.log(raffle)
+                
                 return {
                     price: raffle.price,
                     usersCount: raffle.usersCount
