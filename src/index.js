@@ -38,7 +38,8 @@ const server = new ApolloServer({
 			return ({ req, res, user })
 		}
 	},
-	playground: true
+	playground: true,
+	introspection: true,
 });
 
 server.applyMiddleware({ 
