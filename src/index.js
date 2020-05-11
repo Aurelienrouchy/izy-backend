@@ -10,6 +10,7 @@ import './database'
 import { getUserWithToken } from './database/utils';
 
 const app = express();
+const PORT = process.env.PORT || 3000;
 
 app.use(passport.initialize());
 
@@ -47,7 +48,7 @@ server.applyMiddleware({
 const httpServer = createServer(app);
 server.installSubscriptionHandlers(httpServer);
 
-httpServer.listen({ port: 4000 }, () => {
+httpServer.listen({ port: PORT }, () => {
 	console.log(`🚀 Subscriptions ready at ws://localhost:4000${server.subscriptionsPath}`)
 	console.log(`🚀 Server ready at http://localhost:4000${server.graphqlPath}`)
 });
