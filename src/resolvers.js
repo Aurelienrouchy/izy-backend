@@ -17,9 +17,16 @@ const RAFFLE_INCREMENT = 'RAFFLE_INCREMENT';
 
 export const resolvers = {
     Query: {
-        getUserWithToken: async (parent, {token}, context, info) => await getUserWithToken(token),
+        getUserWithToken: async (parent, {token}, context, info) => {
+            try {
+                const user = await getUserWithToken(token);
+                
+                return user
+            } catch(err) {
+                throw Error(err);
+            }
+        },
         getTicket: async (parent, {token}, context, info) => {
-            console.log('context-user',context.user);
             try {
                 if (!context.user) {
                     return Error('No user');
@@ -65,7 +72,6 @@ export const resolvers = {
                     }
                 });
 
-                console.log(selected)
                 return {
                     selected
                 }
@@ -74,7 +80,6 @@ export const resolvers = {
             }
         },
         getRaffles: async (parent, args, context, info) => {
-            console.log('ppp')
             if (!context.user) {
                 return Error('No user');
             }

@@ -20,6 +20,7 @@ export const typeDefs = gql`
         name: String!
         email: String
         phone: Int
+        coins: Int
         photoURL: String!
         providerId: String!
         raffles: [ Raffle ]

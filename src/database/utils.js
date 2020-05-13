@@ -21,6 +21,5 @@ export const generateNumber = (total, numbers) => {
 
 export const getUserWithToken = async (token) => {
     const tokenDecoded = jwt.verify(token, process.env.JWT_KEY || 'Prout123');
-
     return await User.findById(tokenDecoded.token);
 };
