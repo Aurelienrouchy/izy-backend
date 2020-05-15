@@ -21,15 +21,29 @@ export const resolvers = {
             try {
                 const user = await getUserWithToken(token);
                 
-                return user
-            } catch(err) {
-                throw Error(err);
+                return {
+                    success: true,
+                    message: 'Get user',
+                    payload: {
+                        user
+                    }
+                }
+            } catch(error) {
+                return {
+                    success: false,
+                    message: 'No user in database',
+                    error
+                }
             }
         },
         getTicket: async (parent, {token}, context, info) => {
             try {
                 if (!context.user) {
-                    return Error('No user');
+                    return {
+                        success: false,
+                        message: 'No user in context',
+                        error: 'No user in context'
+                    }
                 }
                 
                 // Get current stored numbers
@@ -73,21 +87,44 @@ export const resolvers = {
                 });
 
                 return {
-                    selected
+                    success: true,
+                    message: 'Get ticket\'s ramdom numbers and value',
+                    payload: {
+                        selected
+                    }
                 }
-            } catch (err) {
-                throw Error(err);
+            } catch (error) {
+                return {
+                    success: false,
+                    message: 'Error in ticket',
+                    error
+                }
             }
         },
         getRaffles: async (parent, args, context, info) => {
             if (!context.user) {
-                return Error('No user');
-            }
+                return {
+                    success: false,
+                    message: 'No user in context',
+                    error: 'Nou'
+                }
+            };
 
             try {
-                return await Raffle.find();
-            } catch(err) {
-                throw Error(err);
+                const raffles = await Raffle.find();
+                return {
+                    success: true,
+                    message: 'Get raffles',
+                    payload: {
+                        raffles
+                    }
+                };
+            } catch(error) {
+                return {
+                    success: false,
+                    message: 'No user in context',
+                    error
+                }
             }
         },
     },
@@ -115,14 +152,22 @@ export const resolvers = {
                         })
 
                         return {
-                            ...newUser._doc,
-                            token: newUser.generateJWT(newUser._id),
-                        };
+                            success: true,
+                            message: 'Get user after create',
+                            payload: {
+                                ...newUser._doc,
+                                token: newUser.generateJWT(newUser._id),
+                            }
+                        }; 
                     }
 
                     return {
-                        ...user._doc,
-                        token: user.generateJWT(user._id),
+                        success: true,
+                        message: 'Get user after create',
+                        payload: {
+                            ...user._doc,
+                            token: user.generateJWT(user._id),
+                        }
                     };
                 }
         
@@ -135,25 +180,22 @@ export const resolvers = {
                     }
                 }
                 return (Error('server error'));
-            } catch (error) {
-                return error;
+            } catch(error) {
+                return {
+                    success: false,
+                    message: 'Fb au fail',
+                    error
+                }
             }
         },
-        createUser: async (parent, args, context, info) => {
-            const {user: {name, email, phone, photoURL, providerId}} = args;
-            const kitty = new User({ name, email, phone, photoURL, providerId });
-
-            await kitty.save();
-
-            return kitty;
-        },
-        incrementRaffle: async (parent, args, context, info) => {
-            const { price } = args;
-            const { _id: userId } = context.user;
-
+        incrementRaffle: async (parent, { price }, { _id: userId }, info) => {
             if (!context.user) {
-                return Error('No user');
-            }
+                return {
+                    success: false,
+                    message: 'No user in context',
+                    error: 'No user in context'
+                }
+            };
 
             try {
                 const raffleRegister = await Raffle.findOne({ price });
@@ -168,7 +210,13 @@ export const resolvers = {
                         }
                     );
 
-                    return raffle;
+                    return {
+                        success: true,
+                        message: 'Create and get raffle',
+                        payload: {
+                            raffle
+                        }
+                    };
                 }
 
                 await Raffle.updateOne(
@@ -181,10 +229,19 @@ export const resolvers = {
 
                 await raffleRegister.save();
 
-                return raffleRegister;
-
-            } catch(err) {
-                throw Error(err);
+                return {
+                    success: true,
+                    message: 'Update raffle',
+                    payload: {
+                        raffleRegister
+                    }
+                };
+            } catch(error) {
+                return {
+                    success: false,
+                    message: 'Fb au fail',
+                    error
+                }
             }
         },
         
