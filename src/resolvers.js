@@ -21,29 +21,15 @@ export const resolvers = {
             try {
                 const user = await getUserWithToken(token);
                 
-                return {
-                    success: true,
-                    message: 'Get user',
-                    payload: {
-                        user
-                    }
-                }
-            } catch(error) {
-                return {
-                    success: false,
-                    message: 'No user in database',
-                    error
-                }
+                return user
+            } catch(err) {
+                throw Error(err);
             }
         },
         getTicket: async (parent, {token}, context, info) => {
             try {
                 if (!context.user) {
-                    return {
-                        success: false,
-                        message: 'No user in context',
-                        error: 'No user in context'
-                    }
+                    return Error('No user');
                 }
                 
                 // Get current stored numbers
@@ -87,44 +73,21 @@ export const resolvers = {
                 });
 
                 return {
-                    success: true,
-                    message: 'Get ticket\'s ramdom numbers and value',
-                    payload: {
-                        selected
-                    }
+                    selected
                 }
-            } catch (error) {
-                return {
-                    success: false,
-                    message: 'Error in ticket',
-                    error
-                }
+            } catch (err) {
+                throw Error(err);
             }
         },
         getRaffles: async (parent, args, context, info) => {
             if (!context.user) {
-                return {
-                    success: false,
-                    message: 'No user in context',
-                    error: 'Nou'
-                }
-            };
+                return Error('No user');
+            }
 
             try {
-                const raffles = await Raffle.find();
-                return {
-                    success: true,
-                    message: 'Get raffles',
-                    payload: {
-                        raffles
-                    }
-                };
-            } catch(error) {
-                return {
-                    success: false,
-                    message: 'No user in context',
-                    error
-                }
+                return await Raffle.find();
+            } catch(err) {
+                throw Error(err);
             }
         },
     },
@@ -152,22 +115,14 @@ export const resolvers = {
                         })
 
                         return {
-                            success: true,
-                            message: 'Get user after create',
-                            payload: {
-                                ...newUser._doc,
-                                token: newUser.generateJWT(newUser._id),
-                            }
-                        }; 
+                            ...newUser._doc,
+                            token: newUser.generateJWT(newUser._id),
+                        };
                     }
 
                     return {
-                        success: true,
-                        message: 'Get user after create',
-                        payload: {
-                            ...user._doc,
-                            token: user.generateJWT(user._id),
-                        }
+                        ...user._doc,
+                        token: user.generateJWT(user._id),
                     };
                 }
         
@@ -180,22 +135,25 @@ export const resolvers = {
                     }
                 }
                 return (Error('server error'));
-            } catch(error) {
-                return {
-                    success: false,
-                    message: 'Fb au fail',
-                    error
-                }
+            } catch (error) {
+                return error;
             }
         },
-        incrementRaffle: async (parent, { price }, { _id: userId }, info) => {
+        createUser: async (parent, args, context, info) => {
+            const {user: {name, email, phone, photoURL, providerId}} = args;
+            const kitty = new User({ name, email, phone, photoURL, providerId });
+
+            await kitty.save();
+
+            return kitty;
+        },
+        incrementRaffle: async (parent, args, context, info) => {
+            const { price } = args;
+            const { _id: userId } = context.user;
+
             if (!context.user) {
-                return {
-                    success: false,
-                    message: 'No user in context',
-                    error: 'No user in context'
-                }
-            };
+                return Error('No user');
+            }
 
             try {
                 const raffleRegister = await Raffle.findOne({ price });
@@ -210,13 +168,7 @@ export const resolvers = {
                         }
                     );
 
-                    return {
-                        success: true,
-                        message: 'Create and get raffle',
-                        payload: {
-                            raffle
-                        }
-                    };
+                    return raffle;
                 }
 
                 await Raffle.updateOne(
@@ -229,19 +181,10 @@ export const resolvers = {
 
                 await raffleRegister.save();
 
-                return {
-                    success: true,
-                    message: 'Update raffle',
-                    payload: {
-                        raffleRegister
-                    }
-                };
-            } catch(error) {
-                return {
-                    success: false,
-                    message: 'Fb au fail',
-                    error
-                }
+                return raffleRegister;
+
+            } catch(err) {
+                throw Error(err);
             }
         },
         

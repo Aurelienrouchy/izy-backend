@@ -226,21 +226,20 @@ var resolvers = {
             switch (_context2.prev = _context2.next) {
               case 0:
                 token = _ref2.token;
-                console.log('context-user', context.user);
-                _context2.prev = 2;
+                _context2.prev = 1;
 
                 if (context.user) {
-                  _context2.next = 5;
+                  _context2.next = 4;
                   break;
                 }
 
                 return _context2.abrupt("return", Error('No user'));
 
-              case 5:
-                _context2.next = 7;
+              case 4:
+                _context2.next = 6;
                 return Global.find({});
 
-              case 7:
+              case 6:
                 _yield$Global$find = _context2.sent;
                 _yield$Global$find2 = _slicedToArray(_yield$Global$find, 1);
                 global = _yield$Global$find2[0];
@@ -271,14 +270,14 @@ var resolvers = {
 
                 context.user.coins = context.user.coins + count; // Save all
 
-                _context2.next = 19;
+                _context2.next = 18;
                 return global.save();
 
-              case 19:
-                _context2.next = 21;
+              case 18:
+                _context2.next = 20;
                 return context.user.save();
 
-              case 21:
+              case 20:
                 selected = selected.map(function (nb, index) {
                   var ramdom = getRamdomBetween(0, 40);
                   return {
@@ -286,22 +285,21 @@ var resolvers = {
                     value: numbersCost[nb]
                   };
                 });
-                console.log(selected);
                 return _context2.abrupt("return", {
                   selected: selected
                 });
 
-              case 26:
-                _context2.prev = 26;
-                _context2.t0 = _context2["catch"](2);
+              case 24:
+                _context2.prev = 24;
+                _context2.t0 = _context2["catch"](1);
                 throw Error(_context2.t0);
 
-              case 29:
+              case 27:
               case "end":
                 return _context2.stop();
             }
           }
-        }, _callee2, null, [[2, 26]]);
+        }, _callee2, null, [[1, 24]]);
       }));
 
       function getTicket(_x5, _x6, _x7, _x8) {
