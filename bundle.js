@@ -13,7 +13,6 @@ var mongoose = require('mongoose');
 var mongoose__default = _interopDefault(mongoose);
 var jwt = _interopDefault(require('jsonwebtoken'));
 var apolloServer = require('apollo-server');
-require('passport-google-token');
 var _taggedTemplateLiteral = _interopDefault(require('@babel/runtime/helpers/taggedTemplateLiteral'));
 
 var Schema = mongoose__default.Schema;
@@ -67,9 +66,13 @@ var passport = require('passport');
 
 var FacebookTokenStrategy = require('passport-facebook-token');
 
+var GoogleTokenStrategy = require('passport-google-token').Strategy; // FACEBOOK STRATEGY
+
+
 passport.use(new FacebookTokenStrategy({
-  clientID: '824371328045172',
-  clientSecret: '0c004d26f24bcf66d3a038c816d960b4'
+  clientID: '1696089354000816',
+  clientSecret: '8316811018a0a1479ecb7d9edca0820d',
+  enableProof: false
 }, function (accessToken, refreshToken, profile, done) {
   return done(null, {
     accessToken: accessToken,
@@ -91,26 +94,36 @@ var authenticateFacebook = function authenticateFacebook(req, res) {
     })(req, res);
   });
 }; // // GOOGLE STRATEGY
-// const GoogleTokenStrategyCallback = (accessToken, refreshToken, profile, done) => done(null, {
-//     accessToken,
-//     refreshToken,
-//     profile,
-// });
-// passport.use(new GoogleTokenStrategy({
-//     clientID: 'your-google-client-id',
-//     clientSecret: 'your-google-client-secret',
-// }, GoogleTokenStrategyCallback));
-// const authenticateGoogle = (req, res) => new Promise((resolve, reject) => {
-//     passport.authenticate('google', { session: false }, (err, data, info) => {
-//         if (err) reject(err);
-//         resolve({ data, info });
-//     })(req, res);
-// });
 
+
+passport.use(new GoogleTokenStrategy({
+  clientID: '108595256943-qq5i3mc7cn5u10ghoflb9hp9n3os10oc.apps.googleusercontent.com' // clientSecret: 'your-google-client-secret',
+
+}, function (accessToken, refreshToken, profile, done) {
+  return done(null, {
+    accessToken: accessToken,
+    refreshToken: refreshToken,
+    profile: profile
+  });
+}));
+
+var authenticateGoogle = function authenticateGoogle(req, res) {
+  return new Promise(function (resolve, reject) {
+    passport.authenticate('google-token', {
+      session: false
+    }, function (err, data, info) {
+      if (err) reject(err);
+      resolve({
+        data: data,
+        info: info
+      });
+    })(req, res);
+  });
+};
 
 var passport$1 = {
-  authenticateFacebook: authenticateFacebook //authenticateGoogle
-
+  authenticateFacebook: authenticateFacebook,
+  authenticateGoogle: authenticateGoogle
 };
 
 var getRamdomBetween = function getRamdomBetween(min, max) {
@@ -178,7 +191,8 @@ function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { va
 
 require('dotenv').config();
 
-var authenticateFacebook$1 = passport$1.authenticateFacebook;
+var authenticateFacebook$1 = passport$1.authenticateFacebook,
+    authenticateGoogle$1 = passport$1.authenticateGoogle;
 var pubsub = new apolloServer.PubSub();
 var resolvers = {
   Query: {
@@ -259,7 +273,7 @@ var resolvers = {
                   indexOfNumber = generateNumber(total, storedNumber);
                   ticket = {
                     'finished': global.tickets.finished + 1,
-                    'current': _objectSpread({}, global.tickets.current, _defineProperty({}, indexOfNumber, global.tickets.current[indexOfNumber] - 1))
+                    'current': _objectSpread(_objectSpread({}, global.tickets.current), {}, _defineProperty({}, indexOfNumber, global.tickets.current[indexOfNumber] - 1))
                   };
                   global.tickets = ticket; // global.tickets.current[indexOfNumber] = global.tickets.current[indexOfNumber] - 1;
 
@@ -350,105 +364,116 @@ var resolvers = {
     }()
   },
   Mutation: {
-    authFacebook: function () {
-      var _authFacebook = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref3, _ref4) {
-        var token, req, res, _yield$authenticateFa, _yield$authenticateFa2, profile, refreshToken, data, info, user, newUser;
+    auth: function () {
+      var _auth = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref3, _ref4) {
+        var token, provider, req, res, profile, fbResponse, _yield$authenticateGo, googleProfile, user, objUser, newUser;
 
         return _regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
-                token = _ref3.token;
+                token = _ref3.token, provider = _ref3.provider;
                 req = _ref4.req, res = _ref4.res;
-                req.body = _objectSpread({}, req.body, {
+                req.body = _objectSpread(_objectSpread({}, req.body), {}, {
                   access_token: token
                 });
-                _context4.prev = 3;
-                _context4.next = 6;
+                console.log(provider);
+                _context4.prev = 4;
+                _context4.t0 = provider;
+                _context4.next = _context4.t0 === 'facebook' ? 8 : _context4.t0 === 'google' ? 13 : 19;
+                break;
+
+              case 8:
+                _context4.next = 10;
                 return authenticateFacebook$1(req, res);
 
-              case 6:
-                _yield$authenticateFa = _context4.sent;
-                _yield$authenticateFa2 = _yield$authenticateFa.data;
-                profile = _yield$authenticateFa2.profile;
-                refreshToken = _yield$authenticateFa2.refreshToken;
-                data = _yield$authenticateFa.data;
-                info = _yield$authenticateFa.info;
+              case 10:
+                fbResponse = _context4.sent;
+                console.log(fbResponse);
+                return _context4.abrupt("break", 20);
 
-                if (!data) {
-                  _context4.next = 22;
+              case 13:
+                _context4.next = 15;
+                return authenticateGoogle$1(req, res);
+
+              case 15:
+                _yield$authenticateGo = _context4.sent;
+                googleProfile = _yield$authenticateGo.data.profile;
+                profile = googleProfile;
+                return _context4.abrupt("break", 20);
+
+              case 19:
+                return _context4.abrupt("break", 20);
+
+              case 20:
+                if (!profile) {
+                  _context4.next = 31;
                   break;
                 }
 
-                _context4.next = 15;
+                _context4.next = 23;
                 return User.findById(profile.id);
 
-              case 15:
+              case 23:
                 user = _context4.sent;
 
                 if (user) {
-                  _context4.next = 21;
+                  _context4.next = 30;
                   break;
                 }
 
-                _context4.next = 19;
-                return User.create({
+                objUser = provider === 'google' ? {
+                  _id: profile._json.id,
+                  createAt: new Date(),
+                  coins: 0,
+                  name: profile._json.name || '',
+                  email: profile._json.email || '',
+                  phone: profile._json.phone || 0,
+                  photoURL: profile._json.picture || ''
+                } : {
                   _id: profile.id,
                   createAt: new Date(),
+                  coins: 0,
                   name: profile.displayName || '',
                   email: profile.emails[0].value || '',
                   phone: profile.phone || 0,
                   photoURL: profile.photos[0].value || ''
-                });
+                };
+                _context4.next = 28;
+                return User.create(objUser);
 
-              case 19:
+              case 28:
                 newUser = _context4.sent;
-                return _context4.abrupt("return", _objectSpread({}, newUser._doc, {
+                return _context4.abrupt("return", _objectSpread(_objectSpread({}, newUser._doc), {}, {
                   token: newUser.generateJWT(newUser._id)
                 }));
 
-              case 21:
-                return _context4.abrupt("return", _objectSpread({}, user._doc, {
+              case 30:
+                return _context4.abrupt("return", _objectSpread(_objectSpread({}, user._doc), {}, {
                   token: user.generateJWT(user._id)
                 }));
 
-              case 22:
-                if (!info) {
-                  _context4.next = 28;
-                  break;
-                }
-
-                _context4.t0 = info.code;
-                _context4.next = _context4.t0 === 'ETIMEDOUT' ? 26 : 27;
-                break;
-
-              case 26:
-                return _context4.abrupt("return", new Error('Failed to reach Facebook: Try Again'));
-
-              case 27:
-                return _context4.abrupt("return", new Error('something went wrong'));
-
-              case 28:
+              case 31:
                 return _context4.abrupt("return", Error('server error'));
 
-              case 31:
-                _context4.prev = 31;
-                _context4.t1 = _context4["catch"](3);
+              case 34:
+                _context4.prev = 34;
+                _context4.t1 = _context4["catch"](4);
                 return _context4.abrupt("return", _context4.t1);
 
-              case 34:
+              case 37:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, null, [[3, 31]]);
+        }, _callee4, null, [[4, 34]]);
       }));
 
-      function authFacebook(_x13, _x14, _x15) {
-        return _authFacebook.apply(this, arguments);
+      function auth(_x13, _x14, _x15) {
+        return _auth.apply(this, arguments);
       }
 
-      return authFacebook;
+      return auth;
     }(),
     createUser: function () {
       var _createUser = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(parent, args, context, info) {
@@ -573,7 +598,7 @@ var resolvers = {
 };
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        authFacebook(token: String!): User\n        authGoogle(token: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!): Raffle\n    }\n"]);
+  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        auth(token: String!, provider: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!): Raffle\n    }\n"]);
 
   _templateObject = function _templateObject() {
     return data;
@@ -657,5 +682,5 @@ server.applyMiddleware({
 app.listen({
   port: PORT
 }, function () {
-  console.log("\uD83D\uDE80 Server ready at http://localhost:4000".concat(server.graphqlPath));
+  console.log("\uD83D\uDE80 Server ready at http://localhost:".concat(PORT).concat(server.graphqlPath));
 });

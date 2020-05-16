@@ -1,11 +1,12 @@
 const passport = require('passport');
 const FacebookTokenStrategy = require('passport-facebook-token');
-import { Strategy as GoogleTokenStrategy } from 'passport-google-token';
+const GoogleTokenStrategy = require('passport-google-token').Strategy;
 
 // FACEBOOK STRATEGY
 passport.use(new FacebookTokenStrategy({
-    clientID: '824371328045172',
-    clientSecret: '0c004d26f24bcf66d3a038c816d960b4'
+    clientID: '1696089354000816',
+    clientSecret: '8316811018a0a1479ecb7d9edca0820d',
+    enableProof: false,
 }, (accessToken, refreshToken, profile, done) => done(null, {
     accessToken,
     refreshToken,
@@ -20,26 +21,23 @@ const authenticateFacebook = (req, res) => new Promise((resolve, reject) => {
 });
 
 // // GOOGLE STRATEGY
-// const GoogleTokenStrategyCallback = (accessToken, refreshToken, profile, done) => done(null, {
-//     accessToken,
-//     refreshToken,
-//     profile,
-// });
+passport.use(new GoogleTokenStrategy({
+    clientID: '108595256943-qq5i3mc7cn5u10ghoflb9hp9n3os10oc.apps.googleusercontent.com',
+    // clientSecret: 'your-google-client-secret',
+}, (accessToken, refreshToken, profile, done) => done(null, {
+    accessToken,
+    refreshToken,
+    profile,
+})));
 
-// passport.use(new GoogleTokenStrategy({
-//     clientID: 'your-google-client-id',
-//     clientSecret: 'your-google-client-secret',
-// }, GoogleTokenStrategyCallback));
-
-// const authenticateGoogle = (req, res) => new Promise((resolve, reject) => {
-
-//     passport.authenticate('google', { session: false }, (err, data, info) => {
-//         if (err) reject(err);
-//         resolve({ data, info });
-//     })(req, res);
-// });
+const authenticateGoogle = (req, res) => new Promise((resolve, reject) => {
+    passport.authenticate('google-token', { session: false }, (err, data, info) => {
+        if (err) reject(err);
+        resolve({ data, info });
+    })(req, res);
+});
 
 export default { 
     authenticateFacebook, 
-    //authenticateGoogle
+    authenticateGoogle
 };

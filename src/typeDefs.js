@@ -51,8 +51,7 @@ export const typeDefs = gql`
     }
 
     type Mutation {
-        authFacebook(token: String!): User
-        authGoogle(token: String!): User
+        auth(token: String!, provider: String!): User
         createUser(user: inputUser): User!
         incrementRaffle(price: Float!): Raffle
     }

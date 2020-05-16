@@ -92,27 +92,54 @@ export const resolvers = {
         },
     },
     Mutation: {
-        authFacebook: async (_, { token }, { req, res }) => {
+        auth: async (_, { token, provider }, { req, res }) => {
             req.body = {
                 ...req.body,
                 access_token: token,
             };
-            
+            console.log(provider)
             try {
-                const { data: {profile, refreshToken}, data, info } = await authenticateFacebook(req, res);
+                let profile;
 
-                if (data) {
+                switch (provider) {
+                    case 'facebook':
+                        const fbResponse = await authenticateFacebook(req, res);
+                        console.log(fbResponse)
+                        break;
+                
+                    case 'google':
+                        const { data: { profile: googleProfile } } = await authenticateGoogle(req, res);
+                        profile = googleProfile;
+                        break;
+                
+                    default:
+                        break;
+                }
+
+                if (profile) {
                     const user = await User.findById(profile.id);
 
                     if (!user) {
-                        const newUser = await User.create({
+
+                        const objUser = provider === 'google' ? {
+                            _id: profile._json.id,
+                            createAt: new Date(),
+                            coins: 0,
+                            name: profile._json.name || '',
+                            email: profile._json.email || '',
+                            phone: profile._json.phone || 0,
+                            photoURL: profile._json.picture || ''
+                        } : {
                             _id: profile.id,
                             createAt: new Date(),
+                            coins: 0,
                             name: profile.displayName || '',
                             email: profile.emails[0].value || '',
                             phone: profile.phone || 0,
                             photoURL: profile.photos[0].value || ''
-                        })
+                        };
+
+                        const newUser = await User.create(objUser);
 
                         return {
                             ...newUser._doc,
@@ -125,15 +152,7 @@ export const resolvers = {
                         token: user.generateJWT(user._id),
                     };
                 }
-        
-                if (info) {
-                    switch (info.code) {
-                        case 'ETIMEDOUT':
-                            return (new Error('Failed to reach Facebook: Try Again'));
-                        default:
-                            return (new Error('something went wrong'));
-                    }
-                }
+
                 return (Error('server error'));
             } catch (error) {
                 return error;
