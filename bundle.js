@@ -366,7 +366,7 @@ var resolvers = {
   Mutation: {
     auth: function () {
       var _auth = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref3, _ref4) {
-        var token, provider, req, res, profile, fbResponse, _yield$authenticateGo, googleProfile, user, objUser, newUser;
+        var token, provider, req, res, profile, _yield$authenticateFa, fbProfile, _yield$authenticateGo, googleProfile, user, userForRegister, newUser;
 
         return _regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
@@ -377,19 +377,19 @@ var resolvers = {
                 req.body = _objectSpread(_objectSpread({}, req.body), {}, {
                   access_token: token
                 });
-                console.log(provider);
-                _context4.prev = 4;
+                _context4.prev = 3;
                 _context4.t0 = provider;
-                _context4.next = _context4.t0 === 'facebook' ? 8 : _context4.t0 === 'google' ? 13 : 19;
+                _context4.next = _context4.t0 === 'facebook' ? 7 : _context4.t0 === 'google' ? 13 : 19;
                 break;
 
-              case 8:
-                _context4.next = 10;
+              case 7:
+                _context4.next = 9;
                 return authenticateFacebook$1(req, res);
 
-              case 10:
-                fbResponse = _context4.sent;
-                console.log(fbResponse);
+              case 9:
+                _yield$authenticateFa = _context4.sent;
+                fbProfile = _yield$authenticateFa.data.profile;
+                profile = fbProfile;
                 return _context4.abrupt("break", 20);
 
               case 13:
@@ -422,25 +422,17 @@ var resolvers = {
                   break;
                 }
 
-                objUser = provider === 'google' ? {
+                userForRegister = {
                   _id: profile._json.id,
                   createAt: new Date(),
                   coins: 0,
                   name: profile._json.name || '',
-                  email: profile._json.email || '',
+                  email: provider === 'google' ? profile._json.email : email[0].value || '',
                   phone: profile._json.phone || 0,
-                  photoURL: profile._json.picture || ''
-                } : {
-                  _id: profile.id,
-                  createAt: new Date(),
-                  coins: 0,
-                  name: profile.displayName || '',
-                  email: profile.emails[0].value || '',
-                  phone: profile.phone || 0,
-                  photoURL: profile.photos[0].value || ''
+                  photoURL: provider === 'google' ? profile._json.picture : email[0].value || ''
                 };
                 _context4.next = 28;
-                return User.create(objUser);
+                return User.create(userForRegister);
 
               case 28:
                 newUser = _context4.sent;
@@ -458,7 +450,7 @@ var resolvers = {
 
               case 34:
                 _context4.prev = 34;
-                _context4.t1 = _context4["catch"](4);
+                _context4.t1 = _context4["catch"](3);
                 return _context4.abrupt("return", _context4.t1);
 
               case 37:
@@ -466,7 +458,7 @@ var resolvers = {
                 return _context4.stop();
             }
           }
-        }, _callee4, null, [[4, 34]]);
+        }, _callee4, null, [[3, 34]]);
       }));
 
       function auth(_x13, _x14, _x15) {

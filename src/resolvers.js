@@ -97,14 +97,14 @@ export const resolvers = {
                 ...req.body,
                 access_token: token,
             };
-            console.log(provider)
+
             try {
                 let profile;
 
                 switch (provider) {
                     case 'facebook':
-                        const fbResponse = await authenticateFacebook(req, res);
-                        console.log(fbResponse)
+                        const { data: { profile: fbProfile } }  = await authenticateFacebook(req, res);
+                        profile = fbProfile;
                         break;
                 
                     case 'google':
@@ -121,25 +121,17 @@ export const resolvers = {
 
                     if (!user) {
 
-                        const objUser = provider === 'google' ? {
+                        const userForRegister = {
                             _id: profile._json.id,
                             createAt: new Date(),
                             coins: 0,
                             name: profile._json.name || '',
-                            email: profile._json.email || '',
+                            email: provider === 'google' ? profile._json.email : email[0].value || '',
                             phone: profile._json.phone || 0,
-                            photoURL: profile._json.picture || ''
-                        } : {
-                            _id: profile.id,
-                            createAt: new Date(),
-                            coins: 0,
-                            name: profile.displayName || '',
-                            email: profile.emails[0].value || '',
-                            phone: profile.phone || 0,
-                            photoURL: profile.photos[0].value || ''
+                            photoURL: provider === 'google' ? profile._json.picture : email[0].value || ''
                         };
 
-                        const newUser = await User.create(objUser);
+                        const newUser = await User.create(userForRegister);
 
                         return {
                             ...newUser._doc,
