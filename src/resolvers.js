@@ -160,7 +160,7 @@ export const resolvers = {
             return kitty;
         },
         incrementRaffle: async (parent, args, context, info) => {
-            const { price } = args;
+            const { price, coins } = args;
             const { _id: userId } = context.user;
 
             if (!context.user) {
@@ -169,6 +169,9 @@ export const resolvers = {
 
             try {
                 const raffleRegister = await Raffle.findOne({ price });
+
+                context.user.coins = context.user.coins - coins;
+                await context.user.save();
                 
                 if(!raffleRegister) {
                     const raffle = await Raffle.create(
@@ -184,7 +187,7 @@ export const resolvers = {
                 }
 
                 await Raffle.updateOne(
-                    { price }, 
+                    { price },
                     { 
                         $push: { users: userId },
                         $inc: { usersCount: 1 }
