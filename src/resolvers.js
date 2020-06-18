@@ -73,7 +73,8 @@ export const resolvers = {
                 });
 
                 return {
-                    selected
+                    selected,
+                    user: context.user
                 }
             } catch (err) {
                 throw Error(err);
