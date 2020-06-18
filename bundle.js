@@ -7,6 +7,7 @@ var _asyncToGenerator = _interopDefault(require('@babel/runtime/helpers/asyncToG
 var apolloServerExpress = require('apollo-server-express');
 var express = _interopDefault(require('express'));
 var passport$2 = _interopDefault(require('passport'));
+var _typeof = _interopDefault(require('@babel/runtime/helpers/typeof'));
 var _defineProperty = _interopDefault(require('@babel/runtime/helpers/defineProperty'));
 var _slicedToArray = _interopDefault(require('@babel/runtime/helpers/slicedToArray'));
 var mongoose = require('mongoose');
@@ -61,6 +62,14 @@ var GlobalSchema = new Schema$3({
   collection: 'global'
 });
 var Global = mongoose.model('global', GlobalSchema);
+
+var Schema$4 = mongoose__default.Schema;
+var historySchema = new Schema$4({
+  createAt: Date,
+  price: Number,
+  user: String
+});
+var History = mongoose.model('history', historySchema);
 
 var passport = require('passport');
 
@@ -171,6 +180,7 @@ var getUserWithToken = /*#__PURE__*/function () {
   };
 }();
 
+var _userNeedForRaffle;
 var numbersCost = {
   0: 1000,
   1: 500,
@@ -184,6 +194,7 @@ var numbersCost = {
   9: 2,
   10: 1
 };
+var userNeedForRaffle = (_userNeedForRaffle = {}, _defineProperty(_userNeedForRaffle, '0.1', 333), _defineProperty(_userNeedForRaffle, '0.2', 667), _defineProperty(_userNeedForRaffle, '0.5', 1667), _defineProperty(_userNeedForRaffle, '1', 3333), _defineProperty(_userNeedForRaffle, '2', 6667), _defineProperty(_userNeedForRaffle, '5', 16667), _defineProperty(_userNeedForRaffle, '10', 33333), _defineProperty(_userNeedForRaffle, '50', 166667), _defineProperty(_userNeedForRaffle, '100', 333333), _userNeedForRaffle);
 
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
 
@@ -300,7 +311,8 @@ var resolvers = {
                   };
                 });
                 return _context2.abrupt("return", {
-                  selected: selected
+                  selected: selected,
+                  user: context.user
                 });
 
               case 24:
@@ -407,7 +419,7 @@ var resolvers = {
 
               case 20:
                 if (!profile) {
-                  _context4.next = 31;
+                  _context4.next = 32;
                   break;
                 }
 
@@ -418,47 +430,48 @@ var resolvers = {
                 user = _context4.sent;
 
                 if (user) {
-                  _context4.next = 30;
+                  _context4.next = 31;
                   break;
                 }
 
+                console.log(profile);
                 userForRegister = {
                   _id: profile._json.id,
                   createAt: new Date(),
                   coins: 0,
                   name: profile._json.name || '',
-                  email: provider === 'google' ? profile._json.email : email[0].value || '',
+                  email: provider === 'google' ? profile._json.email : profile.emails[0].value || '',
                   phone: profile._json.phone || 0,
-                  photoURL: provider === 'google' ? profile._json.picture : email[0].value || ''
+                  photoURL: provider === 'google' ? profile._json.picture : profile.photos[0].value || ''
                 };
-                _context4.next = 28;
+                _context4.next = 29;
                 return User.create(userForRegister);
 
-              case 28:
+              case 29:
                 newUser = _context4.sent;
                 return _context4.abrupt("return", _objectSpread(_objectSpread({}, newUser._doc), {}, {
                   token: newUser.generateJWT(newUser._id)
                 }));
 
-              case 30:
+              case 31:
                 return _context4.abrupt("return", _objectSpread(_objectSpread({}, user._doc), {}, {
                   token: user.generateJWT(user._id)
                 }));
 
-              case 31:
+              case 32:
                 return _context4.abrupt("return", Error('server error'));
 
-              case 34:
-                _context4.prev = 34;
+              case 35:
+                _context4.prev = 35;
                 _context4.t1 = _context4["catch"](3);
                 return _context4.abrupt("return", _context4.t1);
 
-              case 37:
+              case 38:
               case "end":
                 return _context4.stop();
             }
           }
-        }, _callee4, null, [[3, 34]]);
+        }, _callee4, null, [[3, 35]]);
       }));
 
       function auth(_x13, _x14, _x15) {
@@ -505,12 +518,12 @@ var resolvers = {
     }(),
     incrementRaffle: function () {
       var _incrementRaffle = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(parent, args, context, info) {
-        var price, userId, raffleRegister, raffle;
+        var price, coins, userId, raffleRegister, winnerIndex, winner;
         return _regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
             switch (_context6.prev = _context6.next) {
               case 0:
-                price = args.price;
+                price = args.price, coins = args.coins;
                 userId = context.user._id;
 
                 if (context.user) {
@@ -529,13 +542,17 @@ var resolvers = {
 
               case 7:
                 raffleRegister = _context6.sent;
+                context.user.coins = context.user.coins - coins;
+                _context6.next = 11;
+                return context.user.save();
 
+              case 11:
                 if (raffleRegister) {
-                  _context6.next = 13;
+                  _context6.next = 15;
                   break;
                 }
 
-                _context6.next = 11;
+                _context6.next = 14;
                 return Raffle.create({
                   price: price,
                   usersCount: 1,
@@ -543,12 +560,40 @@ var resolvers = {
                   createAt: new Date()
                 });
 
-              case 11:
-                raffle = _context6.sent;
-                return _context6.abrupt("return", raffle);
+              case 14:
+                return _context6.abrupt("return");
 
-              case 13:
-                _context6.next = 15;
+              case 15:
+                if (!(raffleRegister.usersCount > userNeedForRaffle[price])) {
+                  _context6.next = 24;
+                  break;
+                }
+
+                winnerIndex = getRamdomBetween(0, raffleRegister.usersCount).toFixed();
+                winner = raffleRegister.users[winnerIndex];
+                console.log(_typeof(price), winnerIndex);
+                _context6.next = 21;
+                return History.create({
+                  price: price,
+                  user: winner,
+                  createAt: new Date()
+                });
+
+              case 21:
+                _context6.next = 23;
+                return Raffle.updateOne({
+                  price: price
+                }, {
+                  usersCount: 1,
+                  users: [userId],
+                  createAt: new Date()
+                });
+
+              case 23:
+                return _context6.abrupt("return");
+
+              case 24:
+                _context6.next = 26;
                 return Raffle.updateOne({
                   price: price
                 }, {
@@ -560,24 +605,24 @@ var resolvers = {
                   }
                 });
 
-              case 15:
-                _context6.next = 17;
+              case 26:
+                _context6.next = 28;
                 return raffleRegister.save();
 
-              case 17:
-                return _context6.abrupt("return", raffleRegister);
+              case 28:
+                return _context6.abrupt("return");
 
-              case 20:
-                _context6.prev = 20;
+              case 31:
+                _context6.prev = 31;
                 _context6.t0 = _context6["catch"](4);
                 throw Error(_context6.t0);
 
-              case 23:
+              case 34:
               case "end":
                 return _context6.stop();
             }
           }
-        }, _callee6, null, [[4, 20]]);
+        }, _callee6, null, [[4, 31]]);
       }));
 
       function incrementRaffle(_x20, _x21, _x22, _x23) {
@@ -590,7 +635,7 @@ var resolvers = {
 };
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        auth(token: String!, provider: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!): Raffle\n    }\n"]);
+  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        auth(token: String!, provider: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!, coins: Int!): Raffle\n    }\n"]);
 
   _templateObject = function _templateObject() {
     return data;

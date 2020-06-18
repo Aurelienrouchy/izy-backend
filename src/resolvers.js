@@ -4,10 +4,11 @@ import User from "./database/models/User";
 import Raffle from "./database/models/Raffle";
 import Ticket from "./database/models/Ticket";
 import Global from "./database/models/Global";
+import History from "./database/models/History";
 import { PubSub, withFilter } from 'apollo-server';
 import passport from './passport.js';
 import { generateNumber, getUserWithToken, getRamdomBetween } from './database/utils';
-import { numbersCost } from './database/constants';
+import { numbersCost, userNeedForRaffle } from './database/constants';
 require('dotenv').config();
 
 const { authenticateFacebook, authenticateGoogle } = passport;
@@ -121,15 +122,16 @@ export const resolvers = {
                     const user = await User.findById(profile.id);
 
                     if (!user) {
+                        console.log(profile)
 
                         const userForRegister = {
                             _id: profile._json.id,
                             createAt: new Date(),
                             coins: 0,
                             name: profile._json.name || '',
-                            email: provider === 'google' ? profile._json.email : email[0].value || '',
+                            email: provider === 'google' ? profile._json.email : profile.emails[0].value || '',
                             phone: profile._json.phone || 0,
-                            photoURL: provider === 'google' ? profile._json.picture : email[0].value || ''
+                            photoURL: provider === 'google' ? profile._json.picture : profile.photos[0].value || ''
                         };
 
                         const newUser = await User.create(userForRegister);
@@ -168,13 +170,13 @@ export const resolvers = {
             }
 
             try {
-                const raffleRegister = await Raffle.findOne({ price });
+                let raffleRegister = await Raffle.findOne({ price });
 
                 context.user.coins = context.user.coins - coins;
                 await context.user.save();
-                
-                if(!raffleRegister) {
-                    const raffle = await Raffle.create(
+
+                if (!raffleRegister) {
+                    await Raffle.create(
                         { 
                             price,
                             usersCount: 1,
@@ -183,7 +185,30 @@ export const resolvers = {
                         }
                     );
 
-                    return raffle;
+                    return;
+                }
+
+                if (raffleRegister.usersCount > userNeedForRaffle[price]) {
+                    const winnerIndex = getRamdomBetween(0, raffleRegister.usersCount).toFixed();
+                    const winner = raffleRegister.users[winnerIndex];
+
+                    console.log(typeof price, winnerIndex)
+
+                    await History.create(
+                        { 
+                            price,
+                            user: winner,
+                            createAt: new Date()
+                        }
+                    );
+
+                    await Raffle.updateOne({ price }, {
+                        usersCount: 1,
+                        users: [userId],
+                        createAt: new Date()
+                    });
+
+                    return
                 }
 
                 await Raffle.updateOne(
@@ -196,7 +221,7 @@ export const resolvers = {
 
                 await raffleRegister.save();
 
-                return raffleRegister;
+                return;
 
             } catch(err) {
                 throw Error(err);

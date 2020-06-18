@@ -53,6 +53,6 @@ export const typeDefs = gql`
     type Mutation {
         auth(token: String!, provider: String!): User
         createUser(user: inputUser): User!
-        incrementRaffle(price: Float!): Raffle
+        incrementRaffle(price: Float!, coins: Int!): Raffle
     }
 `;
