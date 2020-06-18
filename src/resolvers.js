@@ -122,8 +122,6 @@ export const resolvers = {
                     const user = await User.findById(profile.id);
 
                     if (!user) {
-                        console.log(profile)
-
                         const userForRegister = {
                             _id: profile._json.id,
                             createAt: new Date(),
