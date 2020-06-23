@@ -187,10 +187,8 @@ export const resolvers = {
                 }
 
                 if (raffleRegister.usersCount > userNeedForRaffle[price]) {
-                    const winnerIndex = getRamdomBetween(0, raffleRegister.usersCount).toFixed();
+                    const winnerIndex = getRamdomBetween(0, raffleRegister.usersCount - 1).toFixed();
                     const winner = raffleRegister.users[winnerIndex];
-
-                    console.log(typeof price, winnerIndex)
 
                     await History.create(
                         { 
@@ -200,16 +198,18 @@ export const resolvers = {
                         }
                     );
 
-                    await Raffle.updateOne({ price }, {
+                    const raffle = await Raffle.updateOne({ price }, {
                         usersCount: 1,
                         users: [userId],
                         createAt: new Date()
                     });
 
-                    return
+                    return {
+                        coins: context.user.coins
+                    };
                 }
 
-                await Raffle.updateOne(
+                const raffle = await Raffle.updateOne(
                     { price },
                     { 
                         $push: { users: userId },
@@ -217,9 +217,9 @@ export const resolvers = {
                     }
                 );
 
-                await raffleRegister.save();
-
-                return;
+                return {
+                    coins: context.user.coins
+                };
 
             } catch(err) {
                 throw Error(err);
