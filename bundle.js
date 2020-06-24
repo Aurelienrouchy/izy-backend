@@ -9,6 +9,7 @@ var express = _interopDefault(require('express'));
 var passport$2 = _interopDefault(require('passport'));
 var _defineProperty = _interopDefault(require('@babel/runtime/helpers/defineProperty'));
 var _slicedToArray = _interopDefault(require('@babel/runtime/helpers/slicedToArray'));
+var graphql = require('graphql');
 var mongoose = require('mongoose');
 var mongoose__default = _interopDefault(mongoose);
 var jwt = _interopDefault(require('jsonwebtoken'));
@@ -333,41 +334,128 @@ var resolvers = {
 
       return getTicket;
     }(),
-    getRaffles: function () {
-      var _getRaffles = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(parent, args, context, info) {
-        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+    getHistory: function () {
+      var _getHistory = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(parent, _ref3, context, info) {
+        var token, histories, hist;
+        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
           while (1) {
-            switch (_context3.prev = _context3.next) {
+            switch (_context4.prev = _context4.next) {
               case 0:
+                token = _ref3.token;
+                _context4.prev = 1;
+
                 if (context.user) {
-                  _context3.next = 2;
+                  _context4.next = 4;
                   break;
                 }
 
-                return _context3.abrupt("return", Error('No user'));
+                return _context4.abrupt("return", Error('No user'));
+
+              case 4:
+                _context4.next = 6;
+                return History.find({});
+
+              case 6:
+                histories = _context4.sent;
+                _context4.next = 9;
+                return Promise.all(histories.map( /*#__PURE__*/function () {
+                  var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(history) {
+                    var user;
+                    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                      while (1) {
+                        switch (_context3.prev = _context3.next) {
+                          case 0:
+                            _context3.next = 2;
+                            return User.findById(history.user);
+
+                          case 2:
+                            _context3.t0 = _context3.sent;
+
+                            if (_context3.t0) {
+                              _context3.next = 5;
+                              break;
+                            }
+
+                            _context3.t0 = {};
+
+                          case 5:
+                            user = _context3.t0;
+                            return _context3.abrupt("return", _objectSpread(_objectSpread({}, history._doc), {}, {
+                              user: user.photoURL || ''
+                            }));
+
+                          case 7:
+                          case "end":
+                            return _context3.stop();
+                        }
+                      }
+                    }, _callee3);
+                  }));
+
+                  return function (_x13) {
+                    return _ref4.apply(this, arguments);
+                  };
+                }()));
+
+              case 9:
+                hist = _context4.sent;
+                console.log(hist);
+                return _context4.abrupt("return", hist);
+
+              case 14:
+                _context4.prev = 14;
+                _context4.t0 = _context4["catch"](1);
+                throw Error(_context4.t0);
+
+              case 17:
+              case "end":
+                return _context4.stop();
+            }
+          }
+        }, _callee4, null, [[1, 14]]);
+      }));
+
+      function getHistory(_x9, _x10, _x11, _x12) {
+        return _getHistory.apply(this, arguments);
+      }
+
+      return getHistory;
+    }(),
+    getRaffles: function () {
+      var _getRaffles = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(parent, args, context, info) {
+        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+          while (1) {
+            switch (_context5.prev = _context5.next) {
+              case 0:
+                if (context.user) {
+                  _context5.next = 2;
+                  break;
+                }
+
+                return _context5.abrupt("return", Error('No user'));
 
               case 2:
-                _context3.prev = 2;
-                _context3.next = 5;
+                _context5.prev = 2;
+                _context5.next = 5;
                 return Raffle.find();
 
               case 5:
-                return _context3.abrupt("return", _context3.sent);
+                return _context5.abrupt("return", _context5.sent);
 
               case 8:
-                _context3.prev = 8;
-                _context3.t0 = _context3["catch"](2);
-                throw Error(_context3.t0);
+                _context5.prev = 8;
+                _context5.t0 = _context5["catch"](2);
+                throw Error(_context5.t0);
 
               case 11:
               case "end":
-                return _context3.stop();
+                return _context5.stop();
             }
           }
-        }, _callee3, null, [[2, 8]]);
+        }, _callee5, null, [[2, 8]]);
       }));
 
-      function getRaffles(_x9, _x10, _x11, _x12) {
+      function getRaffles(_x14, _x15, _x16, _x17) {
         return _getRaffles.apply(this, arguments);
       }
 
@@ -376,60 +464,60 @@ var resolvers = {
   },
   Mutation: {
     auth: function () {
-      var _auth = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(_, _ref3, _ref4) {
+      var _auth = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(_, _ref5, _ref6) {
         var token, provider, req, res, profile, _yield$authenticateFa, fbProfile, _yield$authenticateGo, googleProfile, user, userForRegister, newUser;
 
-        return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
           while (1) {
-            switch (_context4.prev = _context4.next) {
+            switch (_context6.prev = _context6.next) {
               case 0:
-                token = _ref3.token, provider = _ref3.provider;
-                req = _ref4.req, res = _ref4.res;
+                token = _ref5.token, provider = _ref5.provider;
+                req = _ref6.req, res = _ref6.res;
                 req.body = _objectSpread(_objectSpread({}, req.body), {}, {
                   access_token: token
                 });
-                _context4.prev = 3;
-                _context4.t0 = provider;
-                _context4.next = _context4.t0 === 'facebook' ? 7 : _context4.t0 === 'google' ? 13 : 19;
+                _context6.prev = 3;
+                _context6.t0 = provider;
+                _context6.next = _context6.t0 === 'facebook' ? 7 : _context6.t0 === 'google' ? 13 : 19;
                 break;
 
               case 7:
-                _context4.next = 9;
+                _context6.next = 9;
                 return authenticateFacebook$1(req, res);
 
               case 9:
-                _yield$authenticateFa = _context4.sent;
+                _yield$authenticateFa = _context6.sent;
                 fbProfile = _yield$authenticateFa.data.profile;
                 profile = fbProfile;
-                return _context4.abrupt("break", 20);
+                return _context6.abrupt("break", 20);
 
               case 13:
-                _context4.next = 15;
+                _context6.next = 15;
                 return authenticateGoogle$1(req, res);
 
               case 15:
-                _yield$authenticateGo = _context4.sent;
+                _yield$authenticateGo = _context6.sent;
                 googleProfile = _yield$authenticateGo.data.profile;
                 profile = googleProfile;
-                return _context4.abrupt("break", 20);
+                return _context6.abrupt("break", 20);
 
               case 19:
-                return _context4.abrupt("break", 20);
+                return _context6.abrupt("break", 20);
 
               case 20:
                 if (!profile) {
-                  _context4.next = 31;
+                  _context6.next = 31;
                   break;
                 }
 
-                _context4.next = 23;
+                _context6.next = 23;
                 return User.findById(profile.id);
 
               case 23:
-                user = _context4.sent;
+                user = _context6.sent;
 
                 if (user) {
-                  _context4.next = 30;
+                  _context6.next = 30;
                   break;
                 }
 
@@ -442,49 +530,49 @@ var resolvers = {
                   phone: profile._json.phone || 0,
                   photoURL: provider === 'google' ? profile._json.picture : profile.photos[0].value || ''
                 };
-                _context4.next = 28;
+                _context6.next = 28;
                 return User.create(userForRegister);
 
               case 28:
-                newUser = _context4.sent;
-                return _context4.abrupt("return", _objectSpread(_objectSpread({}, newUser._doc), {}, {
+                newUser = _context6.sent;
+                return _context6.abrupt("return", _objectSpread(_objectSpread({}, newUser._doc), {}, {
                   token: newUser.generateJWT(newUser._id)
                 }));
 
               case 30:
-                return _context4.abrupt("return", _objectSpread(_objectSpread({}, user._doc), {}, {
+                return _context6.abrupt("return", _objectSpread(_objectSpread({}, user._doc), {}, {
                   token: user.generateJWT(user._id)
                 }));
 
               case 31:
-                return _context4.abrupt("return", Error('server error'));
+                return _context6.abrupt("return", Error('server error'));
 
               case 34:
-                _context4.prev = 34;
-                _context4.t1 = _context4["catch"](3);
-                return _context4.abrupt("return", _context4.t1);
+                _context6.prev = 34;
+                _context6.t1 = _context6["catch"](3);
+                return _context6.abrupt("return", _context6.t1);
 
               case 37:
               case "end":
-                return _context4.stop();
+                return _context6.stop();
             }
           }
-        }, _callee4, null, [[3, 34]]);
+        }, _callee6, null, [[3, 34]]);
       }));
 
-      function auth(_x13, _x14, _x15) {
+      function auth(_x18, _x19, _x20) {
         return _auth.apply(this, arguments);
       }
 
       return auth;
     }(),
     createUser: function () {
-      var _createUser = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(parent, args, context, info) {
+      var _createUser = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee7(parent, args, context, info) {
         var _args$user, name, email, phone, photoURL, providerId, kitty;
 
-        return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+        return _regeneratorRuntime.wrap(function _callee7$(_context7) {
           while (1) {
-            switch (_context5.prev = _context5.next) {
+            switch (_context7.prev = _context7.next) {
               case 0:
                 _args$user = args.user, name = _args$user.name, email = _args$user.email, phone = _args$user.phone, photoURL = _args$user.photoURL, providerId = _args$user.providerId;
                 kitty = new User({
@@ -494,64 +582,64 @@ var resolvers = {
                   photoURL: photoURL,
                   providerId: providerId
                 });
-                _context5.next = 4;
+                _context7.next = 4;
                 return kitty.save();
 
               case 4:
-                return _context5.abrupt("return", kitty);
+                return _context7.abrupt("return", kitty);
 
               case 5:
               case "end":
-                return _context5.stop();
+                return _context7.stop();
             }
           }
-        }, _callee5);
+        }, _callee7);
       }));
 
-      function createUser(_x16, _x17, _x18, _x19) {
+      function createUser(_x21, _x22, _x23, _x24) {
         return _createUser.apply(this, arguments);
       }
 
       return createUser;
     }(),
     incrementRaffle: function () {
-      var _incrementRaffle = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(parent, args, context, info) {
+      var _incrementRaffle = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee8(parent, args, context, info) {
         var price, coins, userId, raffleRegister, winnerIndex, winner, _raffle, raffle;
 
-        return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+        return _regeneratorRuntime.wrap(function _callee8$(_context8) {
           while (1) {
-            switch (_context6.prev = _context6.next) {
+            switch (_context8.prev = _context8.next) {
               case 0:
                 price = args.price, coins = args.coins;
                 userId = context.user._id;
 
                 if (context.user) {
-                  _context6.next = 4;
+                  _context8.next = 4;
                   break;
                 }
 
-                return _context6.abrupt("return", Error('No user'));
+                return _context8.abrupt("return", Error('No user'));
 
               case 4:
-                _context6.prev = 4;
-                _context6.next = 7;
+                _context8.prev = 4;
+                _context8.next = 7;
                 return Raffle.findOne({
                   price: price
                 });
 
               case 7:
-                raffleRegister = _context6.sent;
+                raffleRegister = _context8.sent;
                 context.user.coins = context.user.coins - coins;
-                _context6.next = 11;
+                _context8.next = 11;
                 return context.user.save();
 
               case 11:
                 if (raffleRegister) {
-                  _context6.next = 15;
+                  _context8.next = 15;
                   break;
                 }
 
-                _context6.next = 14;
+                _context8.next = 14;
                 return Raffle.create({
                   price: price,
                   usersCount: 1,
@@ -560,17 +648,17 @@ var resolvers = {
                 });
 
               case 14:
-                return _context6.abrupt("return");
+                return _context8.abrupt("return");
 
               case 15:
                 if (!(raffleRegister.usersCount > userNeedForRaffle[price])) {
-                  _context6.next = 24;
+                  _context8.next = 24;
                   break;
                 }
 
                 winnerIndex = getRamdomBetween(0, raffleRegister.usersCount - 1).toFixed();
                 winner = raffleRegister.users[winnerIndex];
-                _context6.next = 20;
+                _context8.next = 20;
                 return History.create({
                   price: price,
                   user: winner,
@@ -578,7 +666,7 @@ var resolvers = {
                 });
 
               case 20:
-                _context6.next = 22;
+                _context8.next = 22;
                 return Raffle.updateOne({
                   price: price
                 }, {
@@ -588,13 +676,13 @@ var resolvers = {
                 });
 
               case 22:
-                _raffle = _context6.sent;
-                return _context6.abrupt("return", {
+                _raffle = _context8.sent;
+                return _context8.abrupt("return", {
                   coins: context.user.coins
                 });
 
               case 24:
-                _context6.next = 26;
+                _context8.next = 26;
                 return Raffle.updateOne({
                   price: price
                 }, {
@@ -607,35 +695,52 @@ var resolvers = {
                 });
 
               case 26:
-                raffle = _context6.sent;
-                return _context6.abrupt("return", {
+                raffle = _context8.sent;
+                return _context8.abrupt("return", {
                   coins: context.user.coins
                 });
 
               case 30:
-                _context6.prev = 30;
-                _context6.t0 = _context6["catch"](4);
-                throw Error(_context6.t0);
+                _context8.prev = 30;
+                _context8.t0 = _context8["catch"](4);
+                throw Error(_context8.t0);
 
               case 33:
               case "end":
-                return _context6.stop();
+                return _context8.stop();
             }
           }
-        }, _callee6, null, [[4, 30]]);
+        }, _callee8, null, [[4, 30]]);
       }));
 
-      function incrementRaffle(_x20, _x21, _x22, _x23) {
+      function incrementRaffle(_x25, _x26, _x27, _x28) {
         return _incrementRaffle.apply(this, arguments);
       }
 
       return incrementRaffle;
     }()
-  }
+  },
+  Date: new graphql.GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue: function parseValue(value) {
+      return new Date(value); // value from the client
+    },
+    serialize: function serialize(value) {
+      return value.getTime(); // value sent to the client
+    },
+    parseLiteral: function parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return new Date(+ast.value); // ast value is always in string format
+      }
+
+      return null;
+    }
+  })
 };
 
 function _templateObject() {
-  var data = _taggedTemplateLiteral(["\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type IncrementRes {\n        coins: Int!\n        count: Int\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n    }\n\n    type Mutation {\n        auth(token: String!, provider: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!, coins: Int!): IncrementRes\n    }\n"]);
+  var data = _taggedTemplateLiteral(["\n    scalar Date\n\n    input inputUser {\n        name: String!\n        email: String\n        phone: Int,\n        photoURL: String!\n        providerId: String!\n    }\n\n    type AuthResponse {\n        token: String\n        user: User!\n    }\n\n    type User {\n        token: String\n        _id: ID!\n        name: String!\n        email: String\n        phone: Int\n        coins: Int\n        photoURL: String!\n        providerId: String!\n        raffles: [ Raffle ]\n    }\n\n    type Raffle {\n        _id: ID\n        price: Float\n        usersCount: Int\n        users: [ String ]\n    }\n\n    type History {\n        _id: ID\n        price: Float!\n        user: String!\n        createAt: Date! \n    }\n\n    type IncrementRes {\n        coins: Int!\n        count: Int\n    }\n\n    type Number {\n        number: String!\n        value: Int!\n    }\n\n    type Ticket {\n        id: ID!\n        selected: [ Number! ]!\n    }\n\n    type Query {\n        getUser(id: ID!): User\n        getUserWithToken(token: String!): User\n        getTicket: Ticket!\n        getRaffles: [ Raffle! ]!\n        getHistory: [ History! ]!\n    }\n\n    type Mutation {\n        auth(token: String!, provider: String!): User\n        createUser(user: inputUser): User!\n        incrementRaffle(price: Float!, coins: Int!): IncrementRes\n    }\n"]);
 
   _templateObject = function _templateObject() {
     return data;

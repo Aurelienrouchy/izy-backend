@@ -1,6 +1,8 @@
 import { gql } from "apollo-server-express";
 
 export const typeDefs = gql`
+    scalar Date
+
     input inputUser {
         name: String!
         email: String
@@ -33,6 +35,13 @@ export const typeDefs = gql`
         users: [ String ]
     }
 
+    type History {
+        _id: ID
+        price: Float!
+        user: String!
+        createAt: Date! 
+    }
+
     type IncrementRes {
         coins: Int!
         count: Int
@@ -53,6 +62,7 @@ export const typeDefs = gql`
         getUserWithToken(token: String!): User
         getTicket: Ticket!
         getRaffles: [ Raffle! ]!
+        getHistory: [ History! ]!
     }
 
     type Mutation {

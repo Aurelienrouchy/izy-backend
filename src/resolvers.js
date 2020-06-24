@@ -1,4 +1,4 @@
-import mongoose, { model, isValidObjectId } from 'mongoose';
+import { GraphQLScalarType } from 'graphql';
 
 import User from "./database/models/User";
 import Raffle from "./database/models/Raffle";
@@ -77,6 +77,26 @@ export const resolvers = {
                     selected,
                     user: context.user
                 }
+            } catch (err) {
+                throw Error(err);
+            }
+        },
+        getHistory: async (parent, {token}, context, info) => {
+            try {
+                if (!context.user) {
+                    return Error('No user');
+                }
+                
+                const histories = await History.find({});
+                const hist = await Promise.all(histories.map( async history => {
+                    const user = await User.findById(history.user) || {};
+                    return {
+                        ...history._doc,
+                        user: user.photoURL || ''
+                    }
+                }));
+                console.log(hist)
+                return hist
             } catch (err) {
                 throw Error(err);
             }
@@ -226,5 +246,21 @@ export const resolvers = {
             }
         },
         
-    }
+    },
+    Date: new GraphQLScalarType({
+        name: 'Date',
+        description: 'Date custom scalar type',
+        parseValue(value) {
+          return new Date(value); // value from the client
+        },
+        serialize(value) {
+          return value.getTime(); // value sent to the client
+        },
+        parseLiteral(ast) {
+          if (ast.kind === Kind.INT) {
+            return new Date(+ast.value) // ast value is always in string format
+          }
+          return null;
+        },
+    }),
 };
